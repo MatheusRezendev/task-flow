@@ -11,31 +11,96 @@ Construir um app de tarefas para praticar:
 - estado global com Zustand
 - organizacao de projeto inspirada no `vite-project`
 
-Este arquivo serve como guia de execucao.
-O ideal e seguir em ordem, etapa por etapa.
+Este arquivo acompanha o estado real do projeto.
+Ele deve refletir o que ja foi feito e quais sao os proximos passos.
 
 ---
 
-## Regra do Projeto
+## Estado Atual do Projeto
 
-Antes de colocar qualquer coisa no Zustand, responder:
+### Ja concluido
 
-1. Esse dado precisa ser compartilhado entre varios componentes?
-2. Esse dado precisa sobreviver fora do componente atual?
-3. Esse dado realmente e estado ou pode ser calculado?
+- base do projeto configurada com React + Vite + Tailwind
+- componentes shadcn adicionados
+- tema visual base ajustado
+- tipo `Task` criado em `src/types/task.ts`
+- tipo `TaskStats` criado em `src/types/taskStats.ts`
+- `TaskForm` criado visualmente
+- `TaskList` criada visualmente
+- `TaskItem` criado visualmente
+- `TaskStats` criada visualmente
+- arquitetura principal da tela definida:
+  - `TaskStats` no topo
+  - `TaskList` como secao principal
+  - `TaskItem` renderizado dentro de `TaskList`
+  - `TaskForm` sera aberto por `Dialog` dentro de `TaskList`
 
-Se a resposta for "nao" para quase tudo, usar `useState`.
+### Parcial
 
----
+- `TaskStats` ainda precisa ser alimentado por dados reais da tela
+- `TaskList` ainda nao recebe `tasks` por props
+- `TaskList` ainda nao renderiza `TaskItem`
+- `TaskList` ainda nao abre `Dialog`
+- `TaskForm` ainda e apenas visual
+- mocks ainda estao sendo organizados para alimentar a tela
 
-## Stack
+### Ainda nao iniciado
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- shadcn/ui
+- fluxo com `useState`
+- criacao real de tarefas
+- renderizacao real da lista
+- `Dialog` para abrir o `TaskForm`
+- filtros
+- busca
 - Zustand
+
+---
+
+## Estrutura de Tela Definida
+
+```txt
+App
+  TaskStats
+  TaskList
+    header da lista
+    contador
+    botao "New Task"
+    Dialog
+      TaskForm
+    estado vazio ou lista
+      TaskItem
+      TaskItem
+      TaskItem
+```
+
+### Responsabilidade de cada componente
+
+#### `TaskStats`
+
+- mostra resumo rapido das tarefas
+- deve ficar no topo
+- recebe dados por props
+
+#### `TaskList`
+
+- e a secao principal da lista
+- mostra titulo, descricao e contador
+- mostra botao `New Task`
+- deve abrir o `Dialog`
+- renderiza os `TaskItem`
+- mostra estado vazio quando nao houver tarefas
+
+#### `TaskItem`
+
+- representa uma tarefa individual
+- mostra titulo, descricao, status e data
+- por enquanto e apenas visual
+
+#### `TaskForm`
+
+- aparece dentro de `Dialog`
+- e responsavel apenas pelos campos e envio do formulario
+- por enquanto e apenas visual
 
 ---
 
@@ -61,25 +126,7 @@ npm run build
 npm run lint
 ```
 
-### Instalar Zustand
-
-```bash
-npm install zustand
-```
-
-### Instalar icones
-
-```bash
-npm install lucide-react
-```
-
-### Inicializar shadcn
-
-```bash
-npx shadcn@latest init
-```
-
-### Adicionar componentes shadcn mais provaveis
+### Adicionar componentes shadcn se faltar algo
 
 ```bash
 npx shadcn@latest add button
@@ -89,6 +136,12 @@ npx shadcn@latest add checkbox
 npx shadcn@latest add badge
 npx shadcn@latest add separator
 npx shadcn@latest add dialog
+```
+
+### Instalar Zustand quando chegar a etapa
+
+```bash
+npm install zustand
 ```
 
 ---
@@ -114,9 +167,11 @@ src/
 
   types/
     task.ts
+    taskStats.ts
 
   lib/
     utils.ts
+    mockTasks.ts
 
   App.tsx
   main.tsx
@@ -125,125 +180,80 @@ src/
 
 ---
 
-## Estrutura de Tela
+## Proximos Passos Imediatos
 
-Esta sera a estrutura principal da tela:
+Esses sao os proximos passos levando em conta o que ja foi construido.
 
-```txt
-App
-  TaskStats
-  TaskList
-    header da lista
-    botao "New Task"
-    Dialog
-      TaskForm
-    estado vazio ou lista
-    TaskItem
-    TaskItem
-    TaskItem
-```
+### Passo 1 - Criar mocks isolados em `src/lib`
 
-### Responsabilidade de cada componente
+#### Meta
 
-#### `TaskStats`
+Parar de criar dados fake diretamente nos componentes.
 
-- fica no topo da tela principal
-- mostra resumo rapido das tarefas
-- recebe dados por props
+#### O que fazer
 
-#### `TaskList`
+1. criar `src/lib/mockTasks.ts`
+2. exportar `MOCK_TASKS` tipado com `Task[]`
+3. usar esses mocks no `App.tsx`
+4. derivar stats a partir desses dados mockados
 
-- e a secao principal da lista
-- mostra titulo, descricao e contador
-- mostra o botao `New Task`
-- controla a abertura do `Dialog`
-- renderiza os `TaskItem`
-- mostra estado vazio quando nao houver tarefas
-
-#### `TaskItem`
-
-- representa uma tarefa individual
-- mostra titulo, descricao, status e data
-- futuramente recebe acoes como concluir, editar e remover
-
-#### `TaskForm`
-
-- nao fica exposto direto na tela principal
-- aparece dentro de um `Dialog`
-- e responsavel apenas pelos campos e envio do formulario
-
----
-
-## Ordem de Desenvolvimento
-
-## Etapa 1 - Preparar a Base
-
-### Meta
-
-Deixar o projeto pronto para comecar a praticar.
-
-### Fazer
-
-1. Confirmar que o app roda
-2. Confirmar Tailwind funcionando
-3. Confirmar shadcn funcionando
-4. Limpar o `App.tsx`
-5. Ajustar o `index.css` com a base visual do projeto
-
-### Resultado esperado
-
-Uma tela limpa, com tema e estrutura pronta para montar o app.
-
----
-
-## Etapa 2 - Modelar os Dados
-
-### Meta
-
-Definir o formato da tarefa antes de criar componentes.
-
-### Arquivo alvo
-
-`src/types/task.ts`
-
-### Estrutura sugerida
+#### Estrutura base
 
 ```ts
-export type Task = {
-  id: string
-  title: string
-  description: string
-  completed: boolean
-  createdAt: Date
-}
+import type { Task } from "@/types/task"
+
+export const MOCK_TASKS: Task[] = [
+  {
+    id: "1",
+    title: "Study Zustand",
+    description: "Practice global state and stores.",
+    completed: false,
+    createdAt: new Date(),
+  },
+]
 ```
 
-### Aprendizado
+#### Aprendizado
 
-- tipagem basica
-- pensar no formato do estado antes da interface
+- separar dados fake da tela
+- deixar `App.tsx` mais limpo
+- preparar o projeto para trocar mocks por estado real depois
 
 ---
 
-## Etapa 3 - Criar a Interface Base
+### Passo 2 - Usar mocks no `App.tsx`
 
-### Meta
+#### Meta
 
-Montar os blocos visuais do app sem logica complexa ainda.
+Deixar o `App.tsx` mais proximo da arquitetura final.
 
-### Ordem visual no `App.tsx`
+#### O que fazer
 
-1. `TaskStats`
-2. `TaskList`
+1. importar `MOCK_TASKS` de `src/lib/mockTasks.ts`
+2. deixar o `App.tsx` com foco em:
+   - `TaskStats`
+   - `TaskList`
+3. calcular `total`, `completed` e `pending` a partir de `MOCK_TASKS`
+4. passar `tasks` por props para `TaskList`
 
-### Estrutura base
+#### Estrutura base
+
+```tsx
+import { MOCK_TASKS } from "@/lib/mockTasks"
+```
+
+```tsx
+const total = MOCK_TASKS.length
+const completed = MOCK_TASKS.filter((task) => task.completed).length
+const pending = MOCK_TASKS.filter((task) => !task.completed).length
+```
 
 ```tsx
 export default function App() {
   return (
     <main>
-      <TaskStats />
-      <TaskList />
+      <TaskStats total={total} completed={completed} pending={pending} />
+      <TaskList tasks={MOCK_TASKS} />
     </main>
   )
 }
@@ -251,57 +261,53 @@ export default function App() {
 
 ---
 
-## Etapa 3.1 - Montar o `TaskStats`
+### Passo 3 - Ajustar `TaskStats`
 
-### Meta
+#### Meta
 
-Criar o bloco superior de resumo da aplicacao.
+Fazer o `TaskStats` refletir dados vindos por props.
 
-### O que ele deve mostrar
+#### O que fazer
 
-- total de tarefas
-- tarefas concluidas
-- tarefas pendentes
+1. manter `TaskStatsProps = TaskStats`
+2. garantir que os cards reflitam os dados recebidos
+3. manter a organizacao visual em grid
 
-### Estrutura base
+#### Estrutura base
 
 ```tsx
-type Props = {
-  total: number
-  completed: number
-  pending: number
-}
+type TaskStatsProps = TaskStats
 
-export function TaskStats({ total, completed, pending }: Props) {
+export function TaskStats({ total, completed, pending }: TaskStatsProps) {
   return <section>{/* cards de resumo */}</section>
 }
 ```
 
 ---
 
-## Etapa 3.2 - Montar o `TaskList`
+### Passo 4 - Ajustar o `TaskList` para o papel correto
 
-### Meta
+#### Meta
 
-Transformar o `TaskList` em secao principal da tela.
+Fazer `TaskList` deixar de ser um card isolado e virar secao principal da lista.
 
-### O que ele deve ter
+#### O que fazer
 
-- titulo da secao
-- descricao curta
-- contador de tarefas
-- botao `New Task`
-- estado vazio
-- area onde os `TaskItem` serao renderizados
+1. receber `tasks` por props
+2. renderizar contador com base em `tasks.length`
+3. manter estado vazio
+4. preparar area de renderizacao dos itens
 
-### Estrutura base
+#### Estrutura base
 
 ```tsx
-type Props = {
+import type { Task } from "@/types/task"
+
+type TaskListProps = {
   tasks: Task[]
 }
 
-export function TaskList({ tasks }: Props) {
+export function TaskList({ tasks }: TaskListProps) {
   return (
     <section>
       <div>{/* titulo + contador + botao */}</div>
@@ -313,19 +319,70 @@ export function TaskList({ tasks }: Props) {
 
 ---
 
-## Etapa 3.3 - Abrir `TaskForm` via `Dialog`
+### Passo 5 - Renderizar `TaskItem` dentro de `TaskList`
 
-### Meta
+#### Meta
 
-Usar o `TaskList` como ponto de entrada para criar novas tarefas.
+Fazer a lista usar o componente certo.
 
-### Componentes shadcn necessarios
+#### O que fazer
 
-- `Dialog`
-- `DialogTrigger`
-- `DialogContent`
+1. importar `TaskItem` dentro de `TaskList`
+2. usar `map`
+3. quando nao houver tarefas, mostrar o card de estado vazio
 
-### Estrutura base
+#### Estrutura base
+
+```tsx
+{tasks.length === 0 ? (
+  <Card>{/* empty state */}</Card>
+) : (
+  <div>
+    {tasks.map((task) => (
+      <TaskItem key={task.id} task={task} />
+    ))}
+  </div>
+)}
+```
+
+---
+
+### Passo 6 - Colocar o botao `New Task` dentro de `TaskList`
+
+#### Meta
+
+Fazer o `TaskList` ser o ponto de entrada para criacao de tarefa.
+
+#### O que fazer
+
+1. adicionar botao no header da lista
+2. por enquanto ele pode ser apenas visual
+3. depois ele vira `DialogTrigger`
+
+#### Estrutura base
+
+```tsx
+<div>
+  <h2>My Tasks</h2>
+  <Button>New Task</Button>
+</div>
+```
+
+---
+
+### Passo 7 - Abrir `TaskForm` dentro de `Dialog`
+
+#### Meta
+
+Conectar o fluxo de criacao sem ainda implementar a logica final.
+
+#### O que fazer
+
+1. adicionar `Dialog`
+2. usar `DialogTrigger asChild`
+3. renderizar `TaskForm` em `DialogContent`
+
+#### Estrutura base
 
 ```tsx
 <Dialog>
@@ -339,83 +396,29 @@ Usar o `TaskList` como ponto de entrada para criar novas tarefas.
 </Dialog>
 ```
 
-### Aprendizado
+---
 
-- composicao de componentes
-- diferenca entre secao principal e conteudo modal
-- responsabilidade do `TaskList`
+## Ordem de Desenvolvimento Atualizada
+
+1. criar `mockTasks.ts` em `src/lib`
+2. usar mocks no `App.tsx`
+3. ajustar `TaskStats`
+4. fazer `TaskList` receber `tasks`
+5. renderizar `TaskItem` dentro de `TaskList`
+6. adicionar botao `New Task` no `TaskList`
+7. abrir `TaskForm` em `Dialog`
+8. implementar fluxo com `useState`
+9. adicionar filtro e busca
+10. extrair hooks customizados
+11. migrar para Zustand
+12. adicionar persistencia
+13. adicionar tema
 
 ---
 
-## Etapa 3.4 - Montar o `TaskItem`
+## Etapa Seguinte - Estado Local
 
-### Meta
-
-Criar o card visual de cada tarefa.
-
-### O que ele deve mostrar
-
-- titulo
-- descricao
-- status
-- data
-
-### Estrutura base
-
-```tsx
-type Props = {
-  task: Task
-}
-
-export function TaskItem({ task }: Props) {
-  return (
-    <Card>
-      {/* header */}
-      {/* content */}
-      {/* footer */}
-    </Card>
-  )
-}
-```
-
-### Observacao
-
-Nesta etapa o `TaskItem` ainda e visual.
-As acoes de concluir, editar e remover podem vir depois.
-
----
-
-## Etapa 3.5 - Montar o `TaskForm`
-
-### Meta
-
-Criar o formulario visual que sera aberto no `Dialog`.
-
-### O que ele deve ter
-
-- campo de titulo
-- campo de descricao
-- botao de submit
-
-### Estrutura base
-
-```tsx
-export function TaskForm() {
-  return <form>{/* input + descricao + submit */}</form>
-}
-```
-
----
-
-## Etapa 4 - Comecar com Estado Local
-
-### Meta
-
-Fazer a aplicacao funcionar com `useState` antes de usar Zustand.
-
-### Por que fazer isso
-
-Se a logica nao estiver clara com React puro, ela tambem nao vai ficar clara com Zustand.
+Depois que a estrutura visual estiver encaixada, a proxima etapa sera fazer tudo funcionar com `useState`.
 
 ### Estruturas base
 
@@ -449,330 +452,29 @@ const handleToggleTask = (taskId: string) => {}
 const handleRemoveTask = (taskId: string) => {}
 ```
 
-### Aprendizado
+---
 
-- `useState`
-- formularios controlados
-- arrays no estado
-- atualizacao imutavel
-- estado local de modal/dialog
+## O que ainda nao devemos fazer
+
+Por enquanto, evitar:
+
+- criar store Zustand antes do fluxo local existir
+- colocar filtro e busca antes da lista funcionar
+- adicionar logica de editar tarefa cedo demais
+- criar middlewares antes do fluxo basico estar funcionando
 
 ---
 
-## Etapa 5 - Adicionar Filtro e Busca Local
-
-### Meta
-
-Praticar estado local complementar e valores derivados.
-
-### Estados provaveis
-
-```tsx
-const [filter, setFilter] = useState<"all" | "active" | "completed">("all")
-```
-
-```tsx
-const [search, setSearch] = useState("")
-```
-
-### Valores derivados
-
-```tsx
-const filteredTasks = tasks.filter((task) => {
-  return true
-})
-```
-
-```tsx
-const completedCount = tasks.filter((task) => task.completed).length
-```
-
-```tsx
-const pendingCount = tasks.filter((task) => !task.completed).length
-```
-
-### Aprendizado
-
-- nem tudo precisa virar estado
-- diferenca entre estado e dado derivado
-
----
-
-## Etapa 6 - Extrair Hooks Customizados
-
-### Meta
-
-Separar logica reaproveitavel da interface.
-
-### Arquivos alvo
-
-- `hooks/use-task-filter.ts`
-- `hooks/use-task-search.ts`
-
-### Estruturas base
-
-```ts
-export function useTaskFilter(tasks: Task[], filter: "all" | "active" | "completed") {
-  return tasks
-}
-```
-
-```ts
-export function useTaskSearch(tasks: Task[], search: string) {
-  return tasks
-}
-```
-
-### Aprendizado
-
-- quando criar hook customizado
-- como remover logica do componente sem perder clareza
-
----
-
-## Etapa 7 - Introduzir Zustand
-
-### Meta
-
-Mover a lista de tarefas para estado global.
-
-### O que vai para o Zustand
-
-- `tasks`
-- `addTask`
-- `removeTask`
-- `toggleTask`
-- `clearCompleted`
-
-### O que nao vai para o Zustand por enquanto
-
-- valor do input
-- busca digitada
-- filtro visual temporario
-- controle local do `Dialog`
-
-### Arquivo alvo
-
-`src/store/task-store.ts`
-
-### Estrutura base da store
-
-```ts
-type TaskState = {
-  tasks: Task[]
-}
-```
-
-```ts
-type TaskActions = {
-  addTask: (title: string, description: string) => void
-  removeTask: (taskId: string) => void
-  toggleTask: (taskId: string) => void
-  clearCompleted: () => void
-}
-```
-
-```ts
-type TaskStore = TaskState & TaskActions
-```
-
-```ts
-export const useTaskStore = create<TaskStore>((set) => ({
-  tasks: [],
-  addTask: (title, description) => {},
-  removeTask: (taskId) => {},
-  toggleTask: (taskId) => {},
-  clearCompleted: () => {},
-}))
-```
-
-### Leitura no componente
-
-```tsx
-const tasks = useTaskStore((state) => state.tasks)
-```
-
-```tsx
-const addTask = useTaskStore((state) => state.addTask)
-```
-
-### Aprendizado
-
-- o que e uma store
-- estado global compartilhado
-- actions do Zustand
-
----
-
-## Etapa 8 - Persistencia com Middleware
-
-### Meta
-
-Salvar tarefas no navegador para nao perder ao recarregar a pagina.
-
-### Estrutura base
-
-```ts
-export const useTaskStore = create<TaskStore>()(
-  persist(
-    (set) => ({
-      tasks: [],
-      addTask: (title, description) => {},
-      removeTask: (taskId) => {},
-      toggleTask: (taskId) => {},
-      clearCompleted: () => {},
-    }),
-    {
-      name: "task-flow-storage",
-    }
-  )
-)
-```
-
-### Aprendizado
-
-- middleware no Zustand
-- persistencia simples
-
----
-
-## Etapa 9 - Tema com Store Separada
-
-### Meta
-
-Criar um segundo exemplo simples de estado global.
-
-### Arquivo alvo
-
-`src/store/theme-store.ts`
-
-### Estrutura base
-
-```ts
-type Theme = "light" | "dark"
-```
-
-```ts
-type ThemeStore = {
-  theme: Theme
-  toggleTheme: () => void
-}
-```
-
-```ts
-export const useThemeStore = create<ThemeStore>((set) => ({
-  theme: "dark",
-  toggleTheme: () => {},
-}))
-```
-
-### Aprendizado
-
-- stores pequenas e focadas
-- separar dominio de tarefa e dominio de tema
-
----
-
-## Etapa 10 - Melhorar os Componentes com Base no vite-project
-
-### Meta
-
-Usar o `vite-project` como referencia de organizacao, nao como copia cega.
-
-### Observar no `vite-project`
-
-- separacao entre `components`, `store`, `types`
-- uso de hooks para ler estado
-- responsabilidade de cada arquivo
-- padrao visual dos cards e blocos
-
-### Nao copiar sem pensar
-
-- complexidade de slices cedo demais
-- middlewares avancados sem necessidade
-- estados duplicados
-
----
-
-## Ordem Recomendada de Implementacao
-
-1. preparar base do app
-2. modelar tipo `Task`
-3. montar `TaskStats`
-4. montar `TaskList`
-5. montar `TaskItem`
-6. abrir `TaskForm` via `Dialog`
-7. implementar com `useState`
-8. adicionar filtro e busca
-9. extrair hooks customizados
-10. migrar tarefas para Zustand
-11. adicionar persistencia
-12. adicionar tema
-13. revisar organizacao final
-
----
-
-## Checklist por Etapa
-
-Antes de seguir para a proxima etapa, confirmar:
-
-- entendi por que esse estado existe
-- sei quem le esse estado
-- sei quem altera esse estado
-- sei por que ele e local ou global
-- consigo explicar a escolha do hook
-
----
-
-## Estruturas Minimas de Funcoes
-
-### Adicionar tarefa
-
-```ts
-const addTask = (title: string, description: string) => {}
-```
-
-### Remover tarefa
-
-```ts
-const removeTask = (taskId: string) => {}
-```
-
-### Alternar concluido
-
-```ts
-const toggleTask = (taskId: string) => {}
-```
-
-### Limpar concluidas
-
-```ts
-const clearCompleted = () => {}
-```
-
-### Buscar tarefas
-
-```ts
-const handleSearchChange = (value: string) => {}
-```
-
-### Trocar filtro
-
-```ts
-const handleFilterChange = (filter: "all" | "active" | "completed") => {}
-```
-
-### Abrir e fechar dialog
-
-```ts
-const handleOpenChange = (open: boolean) => {}
-```
-
-### Alternar tema
-
-```ts
-const toggleTheme = () => {}
-```
+## Checklist do Momento Atual
+
+Antes de sair da fase visual, confirmar:
+
+- `MOCK_TASKS` existe em `src/lib`
+- `TaskStats` mostra dados por props
+- `TaskList` recebe `tasks`
+- `TaskItem` aparece dentro da lista
+- `TaskForm` abre via `Dialog`
+- `App.tsx` nao esta mais usando dados fake espalhados nem componentes soltos de teste
 
 ---
 
