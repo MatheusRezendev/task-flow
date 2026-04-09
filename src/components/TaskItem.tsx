@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Separator } from "./ui/separator"
 import { Badge } from "./ui/badge"
 
-type Props = {
+type TaskItemProps = {
     task: Task
 }
 
@@ -21,7 +21,7 @@ const stylesheet = {
     "rounded-full border-border/70 bg-background/60 px-3 py-1 text-xs text-muted-foreground",
 }
 
-export function TaskItem({ task }: Props) {
+export function TaskItem({ task }: TaskItemProps) {
     return<>
         <Card className={stylesheet.card}>
             <CardHeader className={stylesheet.header}>
