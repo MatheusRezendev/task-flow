@@ -1,4 +1,4 @@
-# Task Flow — Roadmap de Estudo
+# Task Flow - Roadmap de Estudo
 
 ## Objetivo
 
@@ -11,9 +11,7 @@ Construir um app de tarefas para praticar:
 - estado global com Zustand
 - organizacao de projeto inspirada no `vite-project`
 
-Este arquivo deve servir como guia de execucao.
-
-Nao e para copiar tudo de uma vez.
+Este arquivo serve como guia de execucao.
 O ideal e seguir em ordem, etapa por etapa.
 
 ---
@@ -90,6 +88,7 @@ npx shadcn@latest add card
 npx shadcn@latest add checkbox
 npx shadcn@latest add badge
 npx shadcn@latest add separator
+npx shadcn@latest add dialog
 ```
 
 ---
@@ -99,13 +98,11 @@ npx shadcn@latest add separator
 ```txt
 src/
   components/
-    task-form.tsx
-    task-list.tsx
-    task-item.tsx
-    task-filters.tsx
-    task-search.tsx
-    task-stats.tsx
-    theme-toggle.tsx
+    TaskForm.tsx
+    TaskList.tsx
+    TaskItem.tsx
+    TaskStats.tsx
+    ThemeToggle.tsx
 
   hooks/
     use-task-filter.ts
@@ -128,9 +125,58 @@ src/
 
 ---
 
+## Estrutura de Tela
+
+Esta sera a estrutura principal da tela:
+
+```txt
+App
+  TaskStats
+  TaskList
+    header da lista
+    botao "New Task"
+    Dialog
+      TaskForm
+    estado vazio ou lista
+    TaskItem
+    TaskItem
+    TaskItem
+```
+
+### Responsabilidade de cada componente
+
+#### `TaskStats`
+
+- fica no topo da tela principal
+- mostra resumo rapido das tarefas
+- recebe dados por props
+
+#### `TaskList`
+
+- e a secao principal da lista
+- mostra titulo, descricao e contador
+- mostra o botao `New Task`
+- controla a abertura do `Dialog`
+- renderiza os `TaskItem`
+- mostra estado vazio quando nao houver tarefas
+
+#### `TaskItem`
+
+- representa uma tarefa individual
+- mostra titulo, descricao, status e data
+- futuramente recebe acoes como concluir, editar e remover
+
+#### `TaskForm`
+
+- nao fica exposto direto na tela principal
+- aparece dentro de um `Dialog`
+- e responsavel apenas pelos campos e envio do formulario
+
+---
+
 ## Ordem de Desenvolvimento
 
-## Etapa 1 — Preparar a Base
+## Etapa 1 - Preparar a Base
 
 ### Meta
 
@@ -142,15 +188,15 @@ Deixar o projeto pronto para comecar a praticar.
 2. Confirmar Tailwind funcionando
 3. Confirmar shadcn funcionando
 4. Limpar o `App.tsx`
-5. Deixar o `index.css` com a base visual minima
+5. Ajustar o `index.css` com a base visual do projeto
 
 ### Resultado esperado
 
-Uma tela vazia, limpa e pronta para montar o app.
+Uma tela limpa, com tema e estrutura pronta para montar o app.
 
 ---
 
-## Etapa 2 — Modelar os Dados
+## Etapa 2 - Modelar os Dados
 
 ### Meta
 
@@ -166,8 +212,9 @@ Definir o formato da tarefa antes de criar componentes.
 export type Task = {
   id: string
   title: string
+  description: string
   completed: boolean
-  createdAt: string
+  createdAt: Date
 }
 ```
 
@@ -178,47 +225,189 @@ export type Task = {
 
 ---
 
-## Etapa 3 — Criar a Interface Base
+## Etapa 3 - Criar a Interface Base
 
 ### Meta
 
 Montar os blocos visuais do app sem logica complexa ainda.
 
-### Componentes desta etapa
+### Ordem visual no `App.tsx`
 
-- `TaskForm`
-- `TaskList`
-- `TaskItem`
-- `TaskStats`
+1. `TaskStats`
+2. `TaskList`
 
-### Estrutura esperada
+### Estrutura base
 
 ```tsx
-export function TaskForm() {
-  return <form>{/* input + button */}</form>
+export default function App() {
+  return (
+    <main>
+      <TaskStats />
+      <TaskList />
+    </main>
+  )
 }
 ```
 
+---
+
+## Etapa 3.1 - Montar o `TaskStats`
+
+### Meta
+
+Criar o bloco superior de resumo da aplicacao.
+
+### O que ele deve mostrar
+
+- total de tarefas
+- tarefas concluidas
+- tarefas pendentes
+
+### Estrutura base
+
 ```tsx
-export function TaskList() {
-  return <section>{/* lista de tarefas */}</section>
+type Props = {
+  total: number
+  completed: number
+  pending: number
+}
+
+export function TaskStats({ total, completed, pending }: Props) {
+  return <section>{/* cards de resumo */}</section>
 }
 ```
 
+---
+
+## Etapa 3.2 - Montar o `TaskList`
+
+### Meta
+
+Transformar o `TaskList` em secao principal da tela.
+
+### O que ele deve ter
+
+- titulo da secao
+- descricao curta
+- contador de tarefas
+- botao `New Task`
+- estado vazio
+- area onde os `TaskItem` serao renderizados
+
+### Estrutura base
+
 ```tsx
-export function TaskItem() {
-  return <article>{/* tarefa individual */}</article>
+type Props = {
+  tasks: Task[]
 }
+
+export function TaskList({ tasks }: Props) {
+  return (
+    <section>
+      <div>{/* titulo + contador + botao */}</div>
+      <div>{/* estado vazio ou lista */}</div>
+    </section>
+  )
+}
+```
+
+---
+
+## Etapa 3.3 - Abrir `TaskForm` via `Dialog`
+
+### Meta
+
+Usar o `TaskList` como ponto de entrada para criar novas tarefas.
+
+### Componentes shadcn necessarios
+
+- `Dialog`
+- `DialogTrigger`
+- `DialogContent`
+
+### Estrutura base
+
+```tsx
+<Dialog>
+  <DialogTrigger asChild>
+    <Button>New Task</Button>
+  </DialogTrigger>
+
+  <DialogContent>
+    <TaskForm />
+  </DialogContent>
+</Dialog>
 ```
 
 ### Aprendizado
 
-- quebrar interface em componentes
-- entender responsabilidade de cada componente
+- composicao de componentes
+- diferenca entre secao principal e conteudo modal
+- responsabilidade do `TaskList`
 
 ---
 
-## Etapa 4 — Comecar com Estado Local
+## Etapa 3.4 - Montar o `TaskItem`
+
+### Meta
+
+Criar o card visual de cada tarefa.
+
+### O que ele deve mostrar
+
+- titulo
+- descricao
+- status
+- data
+
+### Estrutura base
+
+```tsx
+type Props = {
+  task: Task
+}
+
+export function TaskItem({ task }: Props) {
+  return (
+    <Card>
+      {/* header */}
+      {/* content */}
+      {/* footer */}
+    </Card>
+  )
+}
+```
+
+### Observacao
+
+Nesta etapa o `TaskItem` ainda e visual.
+As acoes de concluir, editar e remover podem vir depois.
+
+---
+
+## Etapa 3.5 - Montar o `TaskForm`
+
+### Meta
+
+Criar o formulario visual que sera aberto no `Dialog`.
+
+### O que ele deve ter
+
+- campo de titulo
+- campo de descricao
+- botao de submit
+
+### Estrutura base
+
+```tsx
+export function TaskForm() {
+  return <form>{/* input + descricao + submit */}</form>
+}
+```
+
+---
+
+## Etapa 4 - Comecar com Estado Local
 
 ### Meta
 
@@ -236,6 +425,14 @@ const [tasks, setTasks] = useState<Task[]>([])
 
 ```tsx
 const [title, setTitle] = useState("")
+```
+
+```tsx
+const [description, setDescription] = useState("")
+```
+
+```tsx
+const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false)
 ```
 
 ```tsx
@@ -258,10 +455,11 @@ const handleRemoveTask = (taskId: string) => {}
 - formularios controlados
 - arrays no estado
 - atualizacao imutavel
+- estado local de modal/dialog
 
 ---
 
-## Etapa 5 — Adicionar Filtro e Busca Local
+## Etapa 5 - Adicionar Filtro e Busca Local
 
 ### Meta
 
@@ -300,7 +498,7 @@ const pendingCount = tasks.filter((task) => !task.completed).length
 
 ---
 
-## Etapa 6 — Extrair Hooks Customizados
+## Etapa 6 - Extrair Hooks Customizados
 
 ### Meta
 
@@ -332,7 +530,7 @@ export function useTaskSearch(tasks: Task[], search: string) {
 
 ---
 
-## Etapa 7 — Introduzir Zustand
+## Etapa 7 - Introduzir Zustand
 
 ### Meta
 
@@ -351,6 +549,7 @@ Mover a lista de tarefas para estado global.
 - valor do input
 - busca digitada
 - filtro visual temporario
+- controle local do `Dialog`
 
 ### Arquivo alvo
 
@@ -366,7 +565,7 @@ type TaskState = {
 
 ```ts
 type TaskActions = {
-  addTask: (title: string) => void
+  addTask: (title: string, description: string) => void
   removeTask: (taskId: string) => void
   toggleTask: (taskId: string) => void
   clearCompleted: () => void
@@ -380,7 +579,7 @@ type TaskStore = TaskState & TaskActions
 ```ts
 export const useTaskStore = create<TaskStore>((set) => ({
   tasks: [],
-  addTask: (title) => {},
+  addTask: (title, description) => {},
   removeTask: (taskId) => {},
   toggleTask: (taskId) => {},
   clearCompleted: () => {},
@@ -405,7 +604,7 @@ const addTask = useTaskStore((state) => state.addTask)
 
 ---
 
-## Etapa 8 — Persistencia com Middleware
+## Etapa 8 - Persistencia com Middleware
 
 ### Meta
 
@@ -418,7 +617,7 @@ export const useTaskStore = create<TaskStore>()(
   persist(
     (set) => ({
       tasks: [],
-      addTask: (title) => {},
+      addTask: (title, description) => {},
       removeTask: (taskId) => {},
       toggleTask: (taskId) => {},
       clearCompleted: () => {},
@@ -437,7 +636,7 @@ export const useTaskStore = create<TaskStore>()(
 
 ---
 
-## Etapa 9 — Tema com Store Separada
+## Etapa 9 - Tema com Store Separada
 
 ### Meta
 
@@ -462,7 +661,7 @@ type ThemeStore = {
 
 ```ts
 export const useThemeStore = create<ThemeStore>((set) => ({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => {},
 }))
 ```
@@ -474,7 +673,7 @@ export const useThemeStore = create<ThemeStore>((set) => ({
 
 ---
 
-## Etapa 10 — Melhorar os Componentes com Base no vite-project
+## Etapa 10 - Melhorar os Componentes com Base no vite-project
 
 ### Meta
 
@@ -485,6 +684,7 @@ Usar o `vite-project` como referencia de organizacao, nao como copia cega.
 - separacao entre `components`, `store`, `types`
 - uso de hooks para ler estado
 - responsabilidade de cada arquivo
+- padrao visual dos cards e blocos
 
 ### Nao copiar sem pensar
 
@@ -498,14 +698,17 @@ Usar o `vite-project` como referencia de organizacao, nao como copia cega.
 
 1. preparar base do app
 2. modelar tipo `Task`
-3. criar layout base
-4. implementar com `useState`
-5. adicionar filtro e busca
-6. extrair hooks customizados
-7. migrar tarefas para Zustand
-8. adicionar persistencia
-9. adicionar tema
-10. revisar organizacao final
+3. montar `TaskStats`
+4. montar `TaskList`
+5. montar `TaskItem`
+6. abrir `TaskForm` via `Dialog`
+7. implementar com `useState`
+8. adicionar filtro e busca
+9. extrair hooks customizados
+10. migrar tarefas para Zustand
+11. adicionar persistencia
+12. adicionar tema
+13. revisar organizacao final
 
 ---
 
@@ -526,7 +729,7 @@ Antes de seguir para a proxima etapa, confirmar:
 ### Adicionar tarefa
 
 ```ts
-const addTask = (title: string) => {}
+const addTask = (title: string, description: string) => {}
 ```
 
 ### Remover tarefa
@@ -557,6 +760,12 @@ const handleSearchChange = (value: string) => {}
 
 ```ts
 const handleFilterChange = (filter: "all" | "active" | "completed") => {}
+```
+
+### Abrir e fechar dialog
+
+```ts
+const handleOpenChange = (open: boolean) => {}
 ```
 
 ### Alternar tema
