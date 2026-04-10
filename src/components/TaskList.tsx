@@ -3,14 +3,19 @@ import {
     CardContent
 } from "./ui/card"
 import { Badge } from "./ui/badge"
-import type { Task } from "@/types/task"
-import { TaskItem } from "./TaskItem"
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog"
+
+import type { Task } from "@/types/task"
+
+import { TaskItem } from "./TaskItem"
 import { TaskForm } from "./TaskForm"
+
+import { useState } from "react"
 
 type TaskListProps = {
   tasks: Task[]
+  onAddTask: (title:string, description:string) => void
 }
 
 const stylesheet = {
@@ -30,7 +35,9 @@ const stylesheet = {
 }
 
 
-export function TaskList({ tasks } : TaskListProps) {
+export function TaskList({ tasks, onAddTask}: TaskListProps) {
+    const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+
     return <>
         <section className={stylesheet.section}>
             <div className={stylesheet.header}>
@@ -38,17 +45,19 @@ export function TaskList({ tasks } : TaskListProps) {
                     <h2 className={stylesheet.title}>My Tasks</h2>
                     <p className={stylesheet.description}>Here are all your tasks.</p>
                 </div>
-                <Dialog>
+                <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
                     <DialogTrigger asChild>  
                         <Button className={stylesheet.button} >
-                            Add Tasks
+                            New Task
                             <Badge variant="outline" className={stylesheet.counter}>
                                 {tasks.length}
                             </Badge>
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
-                        <TaskForm/>
+                        <DialogTitle>
+                            <TaskForm onAddTask={onAddTask} setIsCreateTaskOpen={setIsCreateTaskOpen}/>
+                        </DialogTitle>
                     </DialogContent>
                 </Dialog>
             </div>
