@@ -15,4 +15,11 @@ export const MOCK_TASKS: Task[] = [
     completed: true,
     createdAt: new Date(),
   },
+  {
+    id: "3",
+    title: "Implement Task Logic",
+    description: "Add functionality to manage tasks.",
+    completed: false,
+    createdAt: new Date(),
+  },
 ]

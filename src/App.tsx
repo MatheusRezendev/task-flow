@@ -3,12 +3,18 @@
 import { TaskList } from "./components/TaskList";
 import { TaskStats } from "./components/TaskStats";
 
+import { MOCK_TASKS } from "./lib/mockTasks";
+
 function App() {
+
+  const total = MOCK_TASKS.length;
+  const completed = MOCK_TASKS.filter(task => task.completed).length;
+  const pending = total - completed;
 
   return (
     <>
-      <TaskStats total={11} completed={5} pending={5}></TaskStats>
-      <TaskList></TaskList>
+      <TaskStats total={total} completed={completed} pending={pending}/>
+      <TaskList tasks={MOCK_TASKS}/>
     </>
   )
 }
