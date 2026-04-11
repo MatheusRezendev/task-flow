@@ -1,8 +1,9 @@
 import type { TaskStats } from "../types/taskStats";
-import { Card
-    , CardContent
-    , CardHeader
-    , CardTitle
+
+import { Card,
+    CardContent,
+    CardHeader,
+    CardTitle
  } from "./ui/card";
 
 type TaskStatsProps = TaskStats

@@ -1,5 +1,3 @@
-// import { TaskForm } from "./components/TaskForm";
-// import { TaskItem } from "./components/TaskItem";
 import { useState } from "react";
 import { TaskList } from "./components/TaskList";
 import { TaskStats } from "./components/TaskStats";
@@ -25,10 +23,27 @@ function App() {
     setTasks((prevTasks) => [...prevTasks, newTask]);
   } 
 
+  const handleRemoveTask = (taskId: string) => {
+    setTasks((prevTasks) => prevTasks.filter(task => task.id !== taskId));
+  }
+
+  const handleToggleTask = (taskId: string) => {
+    setTasks((prevTasks) => prevTasks.map(task => {
+      if(task.id === taskId){
+        return {
+          ...task,
+          completed: !task.completed,
+        }
+      }
+      return task;
+    }))
+  };
+
+
   return (
     <>
       <TaskStats total={total} completed={completed} pending={pending}/>
-      <TaskList tasks={tasks} onAddTask={handleAddTask} />
+      <TaskList tasks={tasks} onAddTask={handleAddTask} onRemoveTask={handleRemoveTask} handleToggleTask={handleToggleTask}/>
     </>
   )
 }
