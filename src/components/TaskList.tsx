@@ -16,6 +16,8 @@ import { useState } from "react"
 type TaskListProps = {
   tasks: Task[]
   onAddTask: (title:string, description:string) => void
+  onRemoveTask: (taskId: string) => void
+  handleToggleTask: (taskId: string) => void
 }
 
 const stylesheet = {
@@ -35,7 +37,7 @@ const stylesheet = {
 }
 
 
-export function TaskList({ tasks, onAddTask}: TaskListProps) {
+export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: TaskListProps) {
     const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
     return <>
@@ -56,7 +58,7 @@ export function TaskList({ tasks, onAddTask}: TaskListProps) {
                     </DialogTrigger>
                     <DialogContent>
                         <DialogTitle>
-                            <TaskForm onAddTask={onAddTask} setIsCreateTaskOpen={setIsCreateTaskOpen}/>
+                            <TaskForm onAddTask={onAddTask}  setIsCreateTaskOpen={setIsCreateTaskOpen}/>
                         </DialogTitle>
                     </DialogContent>
                 </Dialog>
@@ -68,7 +70,7 @@ export function TaskList({ tasks, onAddTask}: TaskListProps) {
                     ):( 
                         <ul className={stylesheet.list}>   
                         {tasks.map((task) => (
-                            <TaskItem key={task.id} task={task} />
+                            <TaskItem key={task.id} task={task} onRemoveTask={onRemoveTask} handleToggleTask={handleToggleTask} />
                         ))}
                         </ul>
                     )}
