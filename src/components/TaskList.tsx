@@ -12,6 +12,10 @@ import { TaskItem } from "./TaskItem"
 import { TaskForm } from "./TaskForm"
 
 import { useState } from "react"
+import { useTaskView } from "@/hooks/useTaskView";
+import { TaskToolbar } from "./TaskToolbar"
+import { useTaskFilter } from "@/hooks/useTaskFilter"
+import { useTaskSearch } from "@/hooks/useTaskSearch"
 
 type TaskListProps = {
   tasks: Task[]
@@ -30,15 +34,18 @@ const stylesheet = {
   content: "space-y-3",
   counter: "bg-background text-foreground rounded-full px-2 py-1 text-xs font-medium",
   emptyCard: "gap-0",
-  emptyContent: "py-8 text-center",
+  emptyContent: "py-4 text-center",
   emptyText: "text-sm text-muted-foreground",
   list: "space-y-3",
   button: "inline-flex items-center gap-2",
 }
 
-
 export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: TaskListProps) {
     const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+    const { filter, search } = useTaskView();
+
+    const filteredTasks = useTaskFilter(tasks, filter);
+    const searchedTasks = useTaskSearch(filteredTasks, search);
 
     return <>
         <section className={stylesheet.section}>
@@ -47,12 +54,13 @@ export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: T
                     <h2 className={stylesheet.title}>My Tasks</h2>
                     <p className={stylesheet.description}>Here are all your tasks.</p>
                 </div>
+                
                 <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
                     <DialogTrigger asChild>  
                         <Button className={stylesheet.button} >
                             New Task
                             <Badge variant="outline" className={stylesheet.counter}>
-                                {tasks.length}
+                                {searchedTasks.length}
                             </Badge>
                         </Button>
                     </DialogTrigger>
@@ -64,12 +72,13 @@ export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: T
                 </Dialog>
             </div>
             <Card className={stylesheet.emptyCard}>
+                <TaskToolbar/>
                 <CardContent className={stylesheet.emptyContent}>
-                    {tasks.length === 0 ?(
+                    {searchedTasks.length === 0 ?(
                         <p className={stylesheet.emptyText}>You don't have any tasks yet.</p>
                     ):( 
                         <ul className={stylesheet.list}>   
-                        {tasks.map((task) => (
+                        {searchedTasks.map((task) => (
                             <TaskItem key={task.id} task={task} onRemoveTask={onRemoveTask} handleToggleTask={handleToggleTask} />
                         ))}
                         </ul>

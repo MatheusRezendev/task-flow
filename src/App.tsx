@@ -1,11 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TaskList } from "./components/TaskList";
 import { TaskStats } from "./components/TaskStats";
 
 import type { Task } from "./types/task";
+import { TaskViewProvider } from "./components/TaskViewProvider";
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const storedTasks = localStorage.getItem("task-flow:tasks");
+
+    if(!storedTasks) return [];
+
+    const parsedTasks = JSON.parse(storedTasks).map((task: Task) => ({
+      ...task,
+      createdAt: new Date(task.createdAt),
+    }));
+
+    return parsedTasks;
+  });
 
   const total = tasks.length;
   const completed = tasks.filter(task => task.completed).length;
@@ -39,11 +51,16 @@ function App() {
     }))
   };
 
+  useEffect(() => {
+    localStorage.setItem("task-flow:tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   return (
     <>
       <TaskStats total={total} completed={completed} pending={pending}/>
-      <TaskList tasks={tasks} onAddTask={handleAddTask} onRemoveTask={handleRemoveTask} handleToggleTask={handleToggleTask}/>
+      <TaskViewProvider>
+        <TaskList tasks={tasks} onAddTask={handleAddTask} onRemoveTask={handleRemoveTask} handleToggleTask={handleToggleTask}/>
+      </TaskViewProvider>
     </>
   )
 }
