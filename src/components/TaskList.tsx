@@ -6,8 +6,6 @@ import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog"
 
-import type { Task } from "@/types/task"
-
 import { TaskItem } from "./TaskItem"
 import { TaskForm } from "./TaskForm"
 
@@ -17,12 +15,7 @@ import { TaskToolbar } from "./TaskToolbar"
 import { useTaskFilter } from "@/hooks/useTaskFilter"
 import { useTaskSearch } from "@/hooks/useTaskSearch"
 
-type TaskListProps = {
-  tasks: Task[]
-  onAddTask: (title:string, description:string) => void
-  onRemoveTask: (taskId: string) => void
-  handleToggleTask: (taskId: string) => void
-}
+import { useTaskStore } from "@/store/taskStore"
 
 const stylesheet = {
   section: "space-y-4",
@@ -40,12 +33,15 @@ const stylesheet = {
   button: "inline-flex items-center gap-2",
 }
 
-export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: TaskListProps) {
+export function TaskList() {
+    const tasks = useTaskStore((state) => state.tasks);
+    
     const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
     const { filter, search } = useTaskView();
 
     const filteredTasks = useTaskFilter(tasks, filter);
     const searchedTasks = useTaskSearch(filteredTasks, search);
+
 
     return <>
         <section className={stylesheet.section}>
@@ -66,7 +62,7 @@ export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: T
                     </DialogTrigger>
                     <DialogContent>
                         <DialogTitle>
-                            <TaskForm onAddTask={onAddTask}  setIsCreateTaskOpen={setIsCreateTaskOpen}/>
+                            <TaskForm setIsCreateTaskOpen={setIsCreateTaskOpen}/>
                         </DialogTitle>
                     </DialogContent>
                 </Dialog>
@@ -79,7 +75,7 @@ export function TaskList({ tasks, onAddTask, onRemoveTask, handleToggleTask }: T
                     ):( 
                         <ul className={stylesheet.list}>   
                         {searchedTasks.map((task) => (
-                            <TaskItem key={task.id} task={task} onRemoveTask={onRemoveTask} handleToggleTask={handleToggleTask} />
+                            <TaskItem key={task.id} task={task}/>
                         ))}
                         </ul>
                     )}
