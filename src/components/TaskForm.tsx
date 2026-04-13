@@ -9,9 +9,9 @@ import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 
 import { useState, type SubmitEvent } from "react";
+import { useTaskStore } from "@/store/taskStore";
 
 type TaskFormProps = {
-    onAddTask: (title:string, description:string) => void
     setIsCreateTaskOpen: (open:boolean) => void
 }
 
@@ -28,13 +28,19 @@ const stylesheet = {
   button: "gap-2",
 }
 
-export function TaskForm({ onAddTask, setIsCreateTaskOpen }: TaskFormProps) {
+export function TaskForm({ setIsCreateTaskOpen }: TaskFormProps) {
+    const addTask = useTaskStore((state) => state.addTask);
+
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
 
     const handleSubmit = (event: SubmitEvent<HTMLFormElement>) =>{
         event.preventDefault();
-        onAddTask(title, description);
+        
+        if(!title.trim() || !description.trim()) return;
+
+        addTask(title, description);
+        
         setTitle("");
         setDescription("");
         setIsCreateTaskOpen(false);

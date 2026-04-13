@@ -45,23 +45,27 @@ Ele deve refletir o que ja foi feito e quais sao os proximos passos.
 - remocao de tarefa ja funciona
 - toggle de tarefa concluida ja funciona
 - `TaskList` ja alterna entre estado vazio e estado real
+- persistencia com `localStorage` ja funciona
+- filtro e busca ja existem
+- `TaskViewContext` ja foi extraido e organizado
+- `TaskViewProvider` ja encapsula o estado de visualizacao
+- `useContext` ja esta sendo usado para `filter` e `search`
+- `useTaskFilter` ja existe e usa `useMemo`
+- `useTaskSearch` ja existe e usa `useMemo`
+- `TaskList` ja consome os hooks de derivacao
 
 ### Parcial
 
-- fluxo local principal ja funciona, mas ainda sem persistencia
-- `tasks` ainda iniciam vazias no `App.tsx`, entao falta decidir entre manter vazio, usar `MOCK_TASKS` ou carregar do `localStorage`
-- busca e filtro ainda nao existem, entao a lista completa ainda cresce sem camada de visualizacao
+- o fluxo local principal esta completo e estavel
+- `tasks` hoje carregam do `localStorage`; ainda falta decidir se o fallback definitivo deve ser `[]` ou `MOCK_TASKS`
+- a separacao entre estado de dominio e estado de visualizacao esta boa, mas ainda nao migramos o dominio para Zustand
 
 ### Ainda nao iniciado
 
-- persistencia com `localStorage`
 - foco automatico no formulario
-- filtros
-- busca
-- compartilhamento de estado de interface com `useContext`
-- memoizacao de dados derivados
-- hooks customizados
-- Zustand
+- migracao de `tasks` para Zustand
+- decidir se `filter` e `search` continuam no contexto ou tambem migram depois
+- tema
 
 ---
 
@@ -70,16 +74,18 @@ Ele deve refletir o que ja foi feito e quais sao os proximos passos.
 ```txt
 App
   TaskStats
-  TaskList
-    header da lista
-    contador
-    botao "New Task"
-    Dialog
-      TaskForm
-    estado vazio ou lista
-      TaskItem
-      TaskItem
-      TaskItem
+  TaskViewProvider
+    TaskList
+      header da lista
+      contador
+      botao "New Task"
+      Dialog
+        TaskForm
+      TaskToolbar
+      estado vazio ou lista
+        TaskItem
+        TaskItem
+        TaskItem
 ```
 
 ### Responsabilidade de cada componente
@@ -96,6 +102,8 @@ App
 - mostra titulo, descricao e contador
 - mostra botao `New Task`
 - controla a abertura do `Dialog`
+- consome estado de visualizacao via contexto
+- usa hooks de derivacao para filtrar e buscar
 - renderiza os `TaskItem`
 - mostra estado vazio quando nao houver tarefas
 
@@ -113,6 +121,18 @@ App
 - e responsavel pelos campos e envio do formulario
 - ja controla estado local dos campos
 - ja envia os dados para criar tarefa
+
+#### `TaskToolbar`
+
+- controla busca e filtro
+- consome `TaskViewContext`
+- altera apenas estado de interface
+
+#### `TaskViewProvider`
+
+- encapsula `filter` e `search`
+- evita prop drilling para a camada de visualizacao
+- ainda nao substitui o estado de dominio das tarefas
 
 ---
 
@@ -156,6 +176,12 @@ npx shadcn@latest add dialog
 npm install zustand
 ```
 
+### Verificacao rapida de tipos
+
+```bash
+npx tsc --noEmit
+```
+
 ---
 
 ## Estrutura Alvo
@@ -170,16 +196,19 @@ src/
     TaskToolbar.tsx
     ThemeToggle.tsx
 
-  contexts/
-    task-view-context.tsx
+  context/
+    taskViewContext.ts
+
+  components/
+    TaskViewProvider.tsx
 
   hooks/
-    use-task-filter.ts
-    use-task-search.ts
-    use-local-storage.ts
+    useTaskFilter.tsx
+    useTaskSearch.tsx
+    useTaskView.tsx
 
   store/
-    task-store.ts
+    taskStore.ts
     theme-store.ts
 
   types/
@@ -199,8 +228,8 @@ src/
 
 ## Proximos Passos Imediatos
 
-A base com estado local ja funciona.
-Agora o foco muda para persistencia, refinamento de UX, filtro, busca e preparacao para `Zustand`.
+A base com estado local, persistencia e visualizacao derivada ja funciona.
+Agora o foco muda para migrar o estado de dominio de `tasks` para `Zustand` sem quebrar a UI atual.
 
 ### Passo 1 - Controlar o `Dialog` com `useState` `concluido`
 
@@ -468,7 +497,7 @@ O `TaskItem` deixa de ser apenas visual e passa a ter a primeira acao real.
 
 ---
 
-### Passo 7 - Persistir tarefas com `useEffect`
+### Passo 7 - Persistir tarefas com `useEffect` `concluido`
 
 #### Meta
 
@@ -557,7 +586,7 @@ Ao abrir o modal, o usuario pode comecar a digitar imediatamente no campo princi
 
 ---
 
-### Passo 9 - Compartilhar estado de interface com `useContext`
+### Passo 9 - Compartilhar estado de interface com `useContext` `concluido`
 
 #### Meta
 
@@ -593,7 +622,7 @@ const value = {
 
 #### Tarefas detalhadas
 
-1. criar `task-view-context.tsx`
+1. criar `taskViewContext`
 2. definir provider e hook de consumo
 3. mover `filter` e `search` para esse contexto
 4. consumir o contexto em uma toolbar da lista
@@ -606,7 +635,7 @@ Filtro e busca deixam de depender de props encadeadas e passam a ser compartilha
 
 ---
 
-### Passo 10 - Extrair filtros e busca para hooks customizados com `useMemo`
+### Passo 10 - Extrair filtros e busca para hooks customizados com `useMemo` `concluido`
 
 #### Meta
 
@@ -660,15 +689,25 @@ Trocar a origem do estado global depois que o fluxo local ja estiver bem entendi
 2. criar store de tarefas
 3. mover `tasks` e as actions para a store
 4. adaptar os componentes para consumir a store
+5. manter `TaskViewProvider`, `useTaskFilter` e `useTaskSearch` intactos nesta primeira migracao
 
 #### Estruturas base
 
 ```tsx
-const useTaskStore = create((set) => ({
+type TaskStore = {
+  tasks: Task[]
+  addTask: (title: string, description: string) => void
+  removeTask: (taskId: string) => void
+  toggleTask: (taskId: string) => void
+}
+```
+
+```tsx
+export const useTaskStore = create<TaskStore>((set) => ({
   tasks: [],
-  addTask: () => {},
-  removeTask: () => {},
-  toggleTask: () => {},
+  addTask: (title, description) => {},
+  removeTask: (taskId) => {},
+  toggleTask: (taskId) => {},
 }))
 ```
 
@@ -681,11 +720,14 @@ const useTaskStore = create((set) => ({
 #### Tarefas detalhadas
 
 1. instalar `zustand`
-2. criar `src/store/task-store.ts`
-3. mover `tasks`, `addTask`, `removeTask` e `toggleTask`
-4. atualizar `App.tsx` para deixar de ser a fonte principal desse estado
-5. manter `TaskItem`, `TaskList` e `TaskStats` com responsabilidades parecidas
-6. testar se o fluxo continua o mesmo apos a migracao
+2. criar `src/store/taskStore.ts`
+3. definir o type da store
+4. mover `tasks`, `addTask`, `removeTask` e `toggleTask`
+5. inicializar a store com os mesmos dados do `localStorage`
+6. atualizar `App.tsx` para deixar de ser a fonte principal desse estado
+7. adaptar `TaskList`, `TaskForm`, `TaskItem` e `TaskStats` para consumir a store
+8. testar se o fluxo continua o mesmo apos a migracao
+9. so depois decidir se vale mover `filter` e `search` tambem
 
 #### Resultado esperado
 
@@ -702,13 +744,14 @@ O app deixa de depender de elevacao de estado para tarefas e passa a usar uma st
 5. fechar `Dialog` apos submit `concluido`
 6. fazer `TaskStats` reagir ao estado real `concluido`
 7. adicionar primeira interacao no `TaskItem` `concluido`
-8. persistir tarefas com `useEffect`
+8. persistir tarefas com `useEffect` `concluido`
 9. melhorar foco e UX do formulario com `useRef`
-10. adicionar filtro e busca
-11. compartilhar estado de interface com `useContext`
-12. extrair hooks customizados e usar `useMemo`
-13. migrar para Zustand
-14. adicionar tema
+10. adicionar filtro e busca `concluido`
+11. compartilhar estado de interface com `useContext` `concluido`
+12. extrair hooks customizados e usar `useMemo` `concluido`
+13. migrar `tasks` para Zustand
+14. validar se `filter/search` continuam no contexto
+15. adicionar tema
 
 ---
 
@@ -716,9 +759,9 @@ O app deixa de depender de elevacao de estado para tarefas e passa a usar uma st
 
 Por enquanto, evitar:
 
-- criar store Zustand antes do fluxo local existir
-- colocar `useContext` para tarefas antes de entender bem o estado local
-- colocar filtro e busca antes da lista funcionar com estado real
+- mover `filter` e `search` para Zustand junto com `tasks` nesta primeira etapa
+- remover `useTaskFilter` e `useTaskSearch`; eles continuam uteis
+- duplicar persistencia no `App.tsx` e na store ao mesmo tempo sem plano claro
 - adicionar logica de editar tarefa cedo demais
 - criar middlewares antes do fluxo basico estar funcionando
 
@@ -726,7 +769,7 @@ Por enquanto, evitar:
 
 ## Checklist da Proxima Etapa
 
-Antes de sair da fase de estado local, confirmar:
+Antes de iniciar a migracao para Zustand, confirmar:
 
 - `Dialog` abre e fecha com estado controlado
 - `TaskForm` usa `value` e `onChange`
@@ -735,8 +778,9 @@ Antes de sair da fase de estado local, confirmar:
 - remover tarefa funciona
 - alternar status funciona
 - tarefas persistem com `localStorage`
-- o input principal recebe foco ao abrir o modal
 - filtro e busca funcionam sem prop drilling desnecessario
+- `TaskViewProvider` esta separado da store de tarefas
+- `useTaskFilter` e `useTaskSearch` funcionam com a lista atual
 - fluxo visual continua limpo
 - o `handleSubmit` usa `React.SubmitEvent<HTMLFormElement>`
 

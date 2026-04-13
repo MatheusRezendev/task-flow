@@ -1,3 +1,4 @@
+import { useTaskStore } from "@/store/taskStore";
 import type { TaskStats } from "../types/taskStats";
 
 import { Card,
@@ -5,8 +6,6 @@ import { Card,
     CardHeader,
     CardTitle
  } from "./ui/card";
-
-type TaskStatsProps = TaskStats
 
 const stylesheet = {
   section: "space-y-4",
@@ -20,8 +19,13 @@ const stylesheet = {
   value: "text-2xl font-semibold tracking-tight",
 }
 
+export function TaskStats() {
+    const tasks = useTaskStore((state) => state.tasks);
 
-export function TaskStats({ total, completed, pending }: TaskStatsProps) {
+    const total = tasks.length;
+    const completed = tasks.filter(task => task.completed).length;
+    const pending = total - completed;
+
     return <>
         <section className={stylesheet.section}>
             <div className={stylesheet.header}>

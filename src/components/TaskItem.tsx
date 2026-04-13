@@ -10,11 +10,10 @@ import { Separator } from "./ui/separator"
 import { Badge } from "./ui/badge"
 import { Trash2 } from "lucide-react"
 import { Button } from "./ui/button"
+import { useTaskStore } from "@/store/taskStore"
 
 type TaskItemProps = {
     task: Task
-    onRemoveTask: (taskId: string) => void
-    handleToggleTask: (taskId: string) => void
 }
 
 const stylesheet = {
@@ -32,12 +31,15 @@ const stylesheet = {
 
 }
 
-export function TaskItem({ task, onRemoveTask, handleToggleTask }: TaskItemProps) {
+export function TaskItem({ task }: TaskItemProps) {
+    const removeTask = useTaskStore((state) => state.removeTask);
+    const handleToggleTask = useTaskStore((state) => state.toggleTask);
+
     return<>
         <Card className={stylesheet.card}>
             <CardHeader className={stylesheet.header}>
                 <CardTitle className={stylesheet.title}>{task.title}</CardTitle>
-                <Trash2 onClick={() => onRemoveTask(task.id)} className={stylesheet.trashButton} />
+                <Trash2 onClick={() => removeTask(task.id)} className={stylesheet.trashButton} />
             </CardHeader>
 
             <Separator/>
@@ -51,7 +53,7 @@ export function TaskItem({ task, onRemoveTask, handleToggleTask }: TaskItemProps
                     {task.completed ? "Completed" : "Pending"}
                 </Button>
                 <Badge className={stylesheet.dateBadge}>
-                    {task.createdAt.toLocaleDateString()}
+                    {new Date(task.createdAt).toLocaleDateString()}
                 </Badge>
             </CardFooter>
         </Card>
